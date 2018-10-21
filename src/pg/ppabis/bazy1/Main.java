@@ -8,12 +8,15 @@ import java.io.File;
 
 public class Main {
 
+	public static int odczyty = 0;
+	public static int zapisy = 0;
+
 	public static void main(String[] args) {
 		if(args.length<1) {
 			System.out.println("Usage: Main <COMMAND> [OPTIONS]");
 			System.out.println("\nCommands:\n\tcreate <FILE> <NUM> - tworzy NUM losowych rekordow do pliku  <FILE>\n\tview <FILE> - wyswietla zawartosc <FILE>\n\t"
 					+ "array <FILE> [rekord1] [rekord2] [...] - utworz z linii komend\n"
-					+ "sort <FILE> - posortuj");
+					+ "sort <FILE> - posortuj (vsort - wypisuj przy scalaniu)");
 		} else {
 			if(args[0].equalsIgnoreCase("create")) {
 				create(args);
@@ -21,7 +24,7 @@ public class Main {
 				view(args);
 			} else if(args[0].equalsIgnoreCase("array")) {
 				fromarray(args);
-			} else if(args[0].equalsIgnoreCase("sort")) {
+			} else if(args[0].equalsIgnoreCase("sort") || args[0].equalsIgnoreCase("vsort")) {
 				sort(args);
 			}
 		}
@@ -94,6 +97,7 @@ public class Main {
 	}
 	
 	public static void sort(String[] args) {
+		boolean vsort = args[0].equalsIgnoreCase("vsort");
 		int ready = 0;
 	    int writy = 0;
 		if(args.length>1) {
@@ -110,6 +114,7 @@ public class Main {
 			Rekord r,r2;
 			boolean sorted = false;
 			int fazy = 1;
+			int rekordy = 0;
 
 			while(!sorted) {
 				System.out.println("[FAZA #"+fazy+"]");
@@ -117,9 +122,11 @@ public class Main {
 				tasma3.openAsInput();
 				tasma2.openAsOutput();
 				tasma1.openAsOutput();
-				
+
+				rekordy = 0;
 				r = tasma3.readNext();
 				r2 = tasma3.readNext();
+				rekordy++;
 				
 				int zmianTasmPrzyDystrybucji = 0;
 				
@@ -132,6 +139,7 @@ public class Main {
 						zmianTasmPrzyDystrybucji++;
 					}
 					r=r2;
+					rekordy++;
 					r2 = tasma3.readNext();
 				}
 				dest.writeNext(r);
@@ -161,28 +169,34 @@ public class Main {
                             while(!tasma1.endSeries && !tasma2.endSeries){
                                 if(r.compareTo(r2)<0) {
                                     tasma3.writeNext(r);
+                                    if(vsort) System.out.println(r);
                                     r = tasma1.readNext();
                                 } else {
                                     tasma3.writeNext(r2);
+									if(vsort) System.out.println(r2);
                                     r2 = tasma2.readNext();
                                 }
                             }
                             //Dopisywanie do scalonej serii az do konca tej serii
                             while(!tasma1.endSeries) {
                                 tasma3.writeNext(r);
+								if(vsort) System.out.println(r);
                                 r=tasma1.readNext();
                             }
                             while(!tasma2.endSeries) {
                                 tasma3.writeNext(r2);
+								if(vsort) System.out.println(r2);
                                 r2=tasma2.readNext();
                             }
                             tasma1.endSeries=false;
                             tasma2.endSeries=false;
                         } else if(r!=null) { //Sa na tasmie 1 -> przepisujemy az do konca
                             tasma3.writeNext(r);
+							if(vsort) System.out.println(r);
                             r = tasma1.readNext();
                         } else if(r2!=null) { //Sa na tasmie 2
                             tasma3.writeNext(r2);
+							if(vsort) System.out.println(r2);
                             r2 = tasma2.readNext();
                         }
                     }
@@ -219,6 +233,8 @@ public class Main {
 	        tasma1.close(); tasma2.close();
             if(!tasmaFile1.delete()) System.err.println("Nie usunieto "+tasmaFile1.getName());
             if(!tasmaFile2.delete()) System.err.println("Nie usunieto "+tasmaFile2.getName());
+            System.out.println("fazy, odczyty, zapisy, suma, rekordy, rozmiar strony");
+            System.out.println(""+fazy+","+odczyty+","+zapisy+","+(zapisy+odczyty)+","+rekordy+","+Tasma.RECORDS_PER_PAGE);
 		}
 	}
 

@@ -72,6 +72,7 @@ public class Tasma {
 				++i;
 			}
 			odczyt++;
+			Main.odczyty++;
 			System.out.println(">["+file.getName()+"]>Wczytano kolejna strone ("+i+" rekordow)");
 		} catch(Exception e){e.printStackTrace();}
 	}
@@ -96,6 +97,7 @@ public class Tasma {
 					fileWriter.write(strona[i].toString()+"\r\n");
 			fileWriter.flush();
 			zapis++;
+			Main.zapisy++;
 			wskStrona = 0;
 			strona = new Rekord[RECORDS_PER_PAGE];
 			System.out.println(">["+file.getName()+"]>Flush strony");
